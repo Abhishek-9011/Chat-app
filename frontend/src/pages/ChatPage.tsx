@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 
+type Message = string;
+type ConnectionStatus = "disconnected" | "connecting" | "connected";
+
 const ChatPage = () => {
-  const [messages, setMessages] = useState(["Welcome to the chat room!"]);
-  const [inputValue, setInputValue] = useState("");
-  const [roomId, setRoomId] = useState("");
-  const [joined, setJoined] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState("disconnected"); // disconnected, connecting, connected
-  const messagesEndRef = useRef(null);
-  const wsRef = useRef();
+  const [messages, setMessages] = useState<Message[]>(["Welcome to the chat room!"]);
+  const [inputValue, setInputValue] = useState<string>("");
+  const [roomId, setRoomId] = useState<string>("");
+  const [joined, setJoined] = useState<boolean>(false);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("disconnected");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -21,9 +24,9 @@ const ChatPage = () => {
     if (!roomId.trim()) return;
     
     setConnectionStatus("connecting");
-    const ws = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket(`${import.meta.env.VITE_BACKEND_URL}`);
     
-    ws.onmessage = (event) => {
+    ws.onmessage = (event: MessageEvent) => {
       setMessages((m) => [...m, event.data]);
     };
     
@@ -43,7 +46,7 @@ const ChatPage = () => {
       setMessages((m) => [...m, `✓ Joined room: ${roomId}`]);
     };
     
-    ws.onerror = (error) => {
+    ws.onerror = (error: Event) => {
       console.error("WebSocket error:", error);
       setConnectionStatus("disconnected");
       setMessages((m) => [...m, "❌ Connection error. Please check if the server is running."]);
@@ -79,7 +82,7 @@ const ChatPage = () => {
     setMessages((m) => [...m, "👋 Left the room"]);
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSendMessage();
     }
@@ -108,8 +111,8 @@ const ChatPage = () => {
                 placeholder="Enter Room ID"
                 className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 value={roomId}
-                onChange={(e) => setRoomId(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleJoinRoom()}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoomId(e.target.value)}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleJoinRoom()}
               />
               <button
                 onClick={handleJoinRoom}
@@ -181,7 +184,7 @@ const ChatPage = () => {
                     placeholder="Type your message..."
                     className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
                   />
                   <button
@@ -219,8 +222,8 @@ const ChatPage = () => {
                     placeholder="Enter Room ID"
                     className="w-full px-4 py-3 mb-4 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     value={roomId}
-                    onChange={(e) => setRoomId(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleJoinRoom()}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoomId(e.target.value)}
+                    onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleJoinRoom()}
                   />
                   <button
                     onClick={handleJoinRoom}
@@ -236,7 +239,7 @@ const ChatPage = () => {
         </div>
       </main>
       
-      <style jsx>{`
+      <style >{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
@@ -255,4 +258,4 @@ const ChatPage = () => {
   );
 };
 
-export default ChatPage; 
+export default ChatPage;
